@@ -4,13 +4,22 @@ package rushhour.com.rushhour;
  * Created by user on 2016-04-02.
  */
 import android.app.Fragment;
+import android.content.Context;
 import android.graphics.Color;
+import android.location.Address;
+import android.location.Criteria;
+import android.location.Geocoder;
+import android.location.Location;
+import android.location.LocationManager;
 import android.os.Bundle;
 import android.support.design.widget.Snackbar;
 import android.support.v4.app.FragmentActivity;
 import android.support.v7.app.AppCompatActivity;
 import android.view.View;
+import android.view.inputmethod.InputMethodManager;
 import android.widget.Button;
+import android.widget.EditText;
+import android.widget.Toast;
 
 import com.akexorcist.googledirection.DirectionCallback;
 import com.akexorcist.googledirection.GoogleDirection;
@@ -21,10 +30,12 @@ import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
+import com.google.android.gms.maps.model.CameraPosition;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.MarkerOptions;
 
 import java.util.ArrayList;
+import java.util.List;
 
 public class SimpleDirection extends AppCompatActivity implements OnMapReadyCallback, View.OnClickListener, DirectionCallback {
     private Button btnRequestDirection;
@@ -33,8 +44,25 @@ public class SimpleDirection extends AppCompatActivity implements OnMapReadyCall
     private LatLng camera;
     private LatLng origin;
     private LatLng destination;
-    private double lat;
-    private double lon;
+    private double currentLat;
+    private double currentLon;
+    private double startLat;
+    private double startLon;
+    private double endLat;
+    private double endLon;
+
+    private EditText from;
+    private EditText to;
+    private String fromString;
+    private String toString;
+    private LatLng fromLatLng;
+    private LatLng toLatLng;
+    private double fromLat;
+    private double fromLng;
+    private double toLat;
+    private double toLng;
+
+    private Button button;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -44,17 +72,55 @@ public class SimpleDirection extends AppCompatActivity implements OnMapReadyCall
         btnRequestDirection = (Button) findViewById(R.id.btn_request_direction);
         btnRequestDirection.setOnClickListener(this);
 
-        camera = new LatLng(lat, lon);
-        origin = new LatLng(lat, lon);
-        destination = new LatLng(lat, lon);
+        currentLat = 43.6532;
+        currentLon = -79.3832;
+
+        startLat = 43.6532;
+        startLon = -79.3832;
+        endLat = 43.6552;
+        endLon = -79.3836;
+
+        camera = new LatLng(currentLat, currentLon);
+        origin = new LatLng(startLat, startLon);
+        destination = new LatLng(endLat, endLon);
 
         ((SupportMapFragment) getSupportFragmentManager().findFragmentById(R.id.map)).getMapAsync(this);
+
+        button = (Button) findViewById(R.id.button);
+        button.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(final View v) {
+                getLatLng();
+            }
+        });
     }
 
     @Override
     public void onMapReady(GoogleMap googleMap) {
         this.googleMap = googleMap;
-        googleMap.animateCamera(CameraUpdateFactory.newLatLngZoom(camera, 13));
+
+        googleMap.setMyLocationEnabled(true);
+
+        LocationManager locationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
+        Criteria criteria = new Criteria();
+
+        Location location = locationManager.getLastKnownLocation(locationManager.getBestProvider(criteria, false));
+        if (location != null)
+        {
+            googleMap.animateCamera(CameraUpdateFactory.newLatLngZoom(
+                    new LatLng(location.getLatitude(), location.getLongitude()), 13));
+
+            CameraPosition cameraPosition = new CameraPosition.Builder()
+                    .target(new LatLng(location.getLatitude(), location.getLongitude()))      // Sets the center of the map to location user
+                    .zoom(17)                   // Sets the zoom
+                    .bearing(90)                // Sets the orientation of the camera to east
+                    .tilt(40)                   // Sets the tilt of the camera to 30 degrees
+                    .build();                   // Creates a CameraPosition from the builder
+            googleMap.animateCamera(CameraUpdateFactory.newCameraPosition(cameraPosition));
+        }
+        else {
+            googleMap.animateCamera(CameraUpdateFactory.newLatLngZoom(camera, 15));
+        }
     }
 
     @Override
@@ -91,5 +157,55 @@ public class SimpleDirection extends AppCompatActivity implements OnMapReadyCall
     @Override
     public void onDirectionFailure(Throwable t) {
         Snackbar.make(btnRequestDirection, t.getMessage(), Snackbar.LENGTH_SHORT).show();
+    }
+
+    public LatLng getLocationFromAddress(Context context, String strAddress) {
+
+        Geocoder coder = new Geocoder(context);
+        List<Address> address;
+        LatLng p1 = null;
+
+        try {
+            address = coder.getFromLocationName(strAddress, 5);
+            if (address == null) {
+                return null;
+            }
+            Address location = address.get(0);
+            location.getLatitude();
+            location.getLongitude();
+
+            p1 = new LatLng(location.getLatitude(), location.getLongitude() );
+
+        } catch (Exception ex) {
+
+            ex.printStackTrace();
+        }
+
+        return p1;
+    }
+
+    public void getLatLng() {
+        InputMethodManager inputManager = (InputMethodManager) this.getSystemService(Context.INPUT_METHOD_SERVICE);
+        inputManager.hideSoftInputFromWindow(this.getCurrentFocus().getWindowToken(), InputMethodManager.HIDE_NOT_ALWAYS);
+
+        from = (EditText)findViewById(R.id.from);
+        to = (EditText)findViewById(R.id.to);
+        fromString = from.getText().toString();
+        toString = to.getText().toString();
+
+        System.out.println(fromString);
+        System.out.println(toString);
+
+        fromLatLng = getLocationFromAddress(this, fromString);
+        toLatLng = getLocationFromAddress(this, toString);
+        System.out.println("fromString" + fromString);
+        System.out.println("toString" + toString);
+
+        /*
+        fromLat = fromLatLng.latitude;
+        fromLng = fromLatLng.longitude;
+        toLat = toLatLng.latitude;
+        toLng = toLatLng.longitude;
+        */
     }
 }
