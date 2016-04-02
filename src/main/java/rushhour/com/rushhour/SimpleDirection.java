@@ -3,6 +3,7 @@ package rushhour.com.rushhour;
 /**
  * Created by user on 2016-04-02.
  */
+import android.app.Activity;
 import android.app.Fragment;
 import android.content.Context;
 import android.graphics.Color;
@@ -16,6 +17,7 @@ import android.support.design.widget.Snackbar;
 import android.support.v4.app.FragmentActivity;
 import android.support.v7.app.AppCompatActivity;
 import android.view.View;
+import android.view.WindowManager;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.Button;
 import android.widget.EditText;
@@ -34,6 +36,12 @@ import com.google.android.gms.maps.model.CameraPosition;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.MarkerOptions;
 
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
+
+import java.io.IOException;
+import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -74,12 +82,12 @@ public class SimpleDirection extends AppCompatActivity implements OnMapReadyCall
 
         currentLat = 43.6532;
         currentLon = -79.3832;
-
+        /*
         startLat = 43.6532;
         startLon = -79.3832;
         endLat = 43.6552;
         endLon = -79.3836;
-
+        */
         camera = new LatLng(currentLat, currentLon);
         origin = new LatLng(startLat, startLon);
         destination = new LatLng(endLat, endLon);
@@ -90,7 +98,25 @@ public class SimpleDirection extends AppCompatActivity implements OnMapReadyCall
         button.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(final View v) {
-                getLatLng();
+                InputMethodManager inputManager = (InputMethodManager)
+                        getSystemService(Context.INPUT_METHOD_SERVICE);
+
+                inputManager.hideSoftInputFromWindow(getCurrentFocus().getWindowToken(),
+                        InputMethodManager.HIDE_NOT_ALWAYS);
+
+                //getLatLng();
+                List<Double> list = new ArrayList<Double>();
+                list = getLatLng();
+                startLat = list.get(0);
+                startLon = list.get(1);
+                endLat = list.get(2);
+                endLon = list.get(3);
+
+                System.out.println(startLat);
+                System.out.println(startLon);
+                System.out.println(endLat);
+                System.out.println(endLon);
+
             }
         });
     }
@@ -159,53 +185,48 @@ public class SimpleDirection extends AppCompatActivity implements OnMapReadyCall
         Snackbar.make(btnRequestDirection, t.getMessage(), Snackbar.LENGTH_SHORT).show();
     }
 
-    public LatLng getLocationFromAddress(Context context, String strAddress) {
-
-        Geocoder coder = new Geocoder(context);
+    public LatLng getLocationFromAddress(String strAddress) {
+        Geocoder coder = new Geocoder(this);
         List<Address> address;
         LatLng p1 = null;
-
         try {
             address = coder.getFromLocationName(strAddress, 5);
-            if (address == null) {
-                return null;
+            if (address != null && address.size() > 0) {
+                Address location = address.get(0);
+                p1 = new LatLng(location.getLatitude(), location.getLongitude());
             }
-            Address location = address.get(0);
-            location.getLatitude();
-            location.getLongitude();
-
-            p1 = new LatLng(location.getLatitude(), location.getLongitude() );
-
-        } catch (Exception ex) {
-
-            ex.printStackTrace();
+        } catch (IOException e) {
+            e.printStackTrace();
         }
-
+        if (p1 == null) {
+            p1 = new LatLng(19.111258, 72.908313);
+        }
         return p1;
     }
 
-    public void getLatLng() {
-        InputMethodManager inputManager = (InputMethodManager) this.getSystemService(Context.INPUT_METHOD_SERVICE);
-        inputManager.hideSoftInputFromWindow(this.getCurrentFocus().getWindowToken(), InputMethodManager.HIDE_NOT_ALWAYS);
-
+    public List<Double> getLatLng() {
         from = (EditText)findViewById(R.id.from);
         to = (EditText)findViewById(R.id.to);
         fromString = from.getText().toString();
         toString = to.getText().toString();
 
-        System.out.println(fromString);
-        System.out.println(toString);
+        //System.out.println(fromString);
+        //System.out.println(toString);
 
-        fromLatLng = getLocationFromAddress(this, fromString);
-        toLatLng = getLocationFromAddress(this, toString);
-        System.out.println("fromString" + fromString);
-        System.out.println("toString" + toString);
+        fromLatLng = getLocationFromAddress(fromString);
+        toLatLng = getLocationFromAddress(toString);
 
-        /*
         fromLat = fromLatLng.latitude;
         fromLng = fromLatLng.longitude;
         toLat = toLatLng.latitude;
         toLng = toLatLng.longitude;
-        */
+
+        List<Double> list = new ArrayList<Double>();
+        list.add(fromLat);
+        list.add(fromLng);
+        list.add(toLat);
+        list.add(toLng);
+
+        return list;
     }
 }
