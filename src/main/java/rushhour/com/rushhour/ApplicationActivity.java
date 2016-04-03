@@ -2,6 +2,7 @@ package rushhour.com.rushhour;
 
 import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.graphics.Color;
 import android.location.Address;
 import android.location.Geocoder;
@@ -42,6 +43,7 @@ import rushhour.com.rushhour.util.DirectionsJSONParser;
 import rushhour.com.rushhour.location.GPSTracker;
 
 public class ApplicationActivity extends AppCompatActivity implements OnMapReadyCallback, View.OnClickListener {
+    public static final String NAME = ApplicationActivity.class.getSimpleName();
 
     /* Google Direction API */
     private GoogleMap googleMap;
@@ -91,13 +93,14 @@ public class ApplicationActivity extends AppCompatActivity implements OnMapReady
         duration3 = (TextView) findViewById(R.id.duration3);
         duration4 = (TextView) findViewById(R.id.duration4);
 
+        from = (EditText)findViewById(R.id.from);
+        to = (EditText)findViewById(R.id.to);
+        from.setText("1 yonge street toronto ontario canada");
+        to.setText("2373 yonge street toronto ontario canada");
+
         GPSTracker gpsTracker = new GPSTracker(this);
         currentLat = gpsTracker.getLatitude();
         currentLon = gpsTracker.getLongitude();
-        /*
-        currentLat = 43.6532;
-        currentLon = -79.3832;
-        */
 
         camera = new LatLng(currentLat, currentLon);
 
@@ -107,6 +110,8 @@ public class ApplicationActivity extends AppCompatActivity implements OnMapReady
         button.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(final View v) {
+                googleMap.clear();
+
                 InputMethodManager inputManager = (InputMethodManager)
                         getSystemService(Context.INPUT_METHOD_SERVICE);
 
@@ -119,11 +124,6 @@ public class ApplicationActivity extends AppCompatActivity implements OnMapReady
                 startLon = list.get(1);
                 endLat = list.get(2);
                 endLon = list.get(3);
-
-                System.out.println(startLat);
-                System.out.println(startLon);
-                System.out.println(endLat);
-                System.out.println(endLon);
 
                 origin = new LatLng(startLat, startLon);
                 destination = new LatLng(endLat, endLon);
@@ -198,8 +198,6 @@ public class ApplicationActivity extends AppCompatActivity implements OnMapReady
     }
 
     public List<Double> getLatLng() {
-        from = (EditText)findViewById(R.id.from);
-        to = (EditText)findViewById(R.id.to);
         fromString = from.getText().toString();
         toString = to.getText().toString();
 
@@ -408,6 +406,7 @@ public class ApplicationActivity extends AppCompatActivity implements OnMapReady
                 downloadTask.execute(url);
             }
             else {
+                time = 0;
                 /*
                 currentLat = 43.6532;
                 currentLon = -79.3832;
