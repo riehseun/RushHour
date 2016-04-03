@@ -2,6 +2,7 @@ package rushhour.com.rushhour;
 
 import android.app.Activity;
 import android.app.Fragment;
+import android.app.ProgressDialog;
 import android.content.Context;
 import android.graphics.Color;
 import android.location.Address;
@@ -20,6 +21,8 @@ import android.view.WindowManager;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.ListView;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import com.akexorcist.googledirection.DirectionCallback;
@@ -41,6 +44,7 @@ import com.google.android.gms.maps.model.PolylineOptions;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
+import org.w3c.dom.Text;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -60,6 +64,7 @@ import rushhour.com.rushhour.util.DirectionsJSONParser;
 
 public class ApplicationActivity extends AppCompatActivity implements OnMapReadyCallback, View.OnClickListener, DirectionCallback {
 
+    /* Google Direction API */
     private GoogleMap googleMap;
     private String serverKey = "AIzaSyALQ8AUHj3Y5PeSwUVjE-aN3KnaLqlnK-w";
     private LatLng camera;
@@ -87,10 +92,22 @@ public class ApplicationActivity extends AppCompatActivity implements OnMapReady
 
     private String[] colors = {"#7fff7272", "#7f31c7c5", "#7fff8a00"};
 
+    private TextView duration1;
+    private TextView duration2;
+    private TextView duration3;
+    private TextView duration4;
+
+    private static int time = 0;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.applicationactivity);
+
+        duration1 = (TextView) findViewById(R.id.duration1);
+        duration2 = (TextView) findViewById(R.id.duration2);
+        duration3 = (TextView) findViewById(R.id.duration3);
+        duration4 = (TextView) findViewById(R.id.duration4);
 
         currentLat = 43.6532;
         currentLon = -79.3832;
@@ -158,7 +175,7 @@ public class ApplicationActivity extends AppCompatActivity implements OnMapReady
 
         DownloadTask downloadTask = new DownloadTask();
         // Getting URL to the Google Directions API
-        String url = getDirectionsUrl(origin, destination, 14400000);
+        String url = getDirectionsUrl(origin, destination, time);
         // Start downloading json data from Google Directions API
         downloadTask.execute(url);
     }
@@ -242,13 +259,7 @@ public class ApplicationActivity extends AppCompatActivity implements OnMapReady
         // Destination of route
         String str_dest = "destination="+dest.latitude+","+dest.longitude;
 
-        // Sensor enabled
-        String sensor = "sensor=false";
-
-        // Alternative routes
-        String alternatives = "alternatives=false";
-
-        long seconds = System.currentTimeMillis();
+        long seconds = System.currentTimeMillis() / 1000;
         System.out.println("seconds in UTC: " + seconds);
         seconds += secondsToAdd;
         String secondsString = String.valueOf(seconds);
@@ -257,11 +268,8 @@ public class ApplicationActivity extends AppCompatActivity implements OnMapReady
         // Departure Time
         String departureTime = "departure_time="+secondsString;
 
-        // bus, subway, train, tram, rail
-        String transitMode = "transit_mode=bus";
-
         // Building the parameters to the web service
-        String parameters = str_origin+"&"+str_dest+"&"+sensor+"&"+alternatives+"&"+departureTime+"&"+transitMode;
+        String parameters = str_origin+"&"+str_dest+"&"+departureTime;
 
         // Output format
         String output = "json";
@@ -407,10 +415,31 @@ public class ApplicationActivity extends AppCompatActivity implements OnMapReady
                 lineOptions.color(Color.BLUE);
             }
 
-            Toast.makeText(getBaseContext(), "Distance:"+distance + ", Duration:"+duration, Toast.LENGTH_LONG).show();
+            Toast.makeText(getBaseContext(), "Time:"+time + ", Duration:"+duration, Toast.LENGTH_LONG).show();
+            System.out.println("TIME: " + time);
 
             // Drawing polyline in the Google Map for the i-th route
             googleMap.addPolyline(lineOptions);
+
+            if (time == 0) {
+                duration1.setText("Leave now: " + duration);
+            }
+            else if (time == 1800) {
+                duration2.setText("Leave in 30 mins: " + duration);
+            }
+            else if (time == 3600) {
+                duration3.setText("Leave in 1 hour: " + duration);
+            }
+            else if (time == 5400) {
+                duration4.setText("Leave in 90 mins: " + duration);
+            }
+
+            if (time < 5400) {
+                DownloadTask downloadTask = new DownloadTask();
+                time += 1800; // increament by 30 minutes
+                String url = getDirectionsUrl(origin, destination, time);
+                downloadTask.execute(url);
+            }
         }
     }
 }
