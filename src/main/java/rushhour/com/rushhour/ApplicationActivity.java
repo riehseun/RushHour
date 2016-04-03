@@ -4,6 +4,7 @@ import android.app.Activity;
 import android.app.Fragment;
 import android.app.ProgressDialog;
 import android.content.Context;
+import android.content.Intent;
 import android.graphics.Color;
 import android.location.Address;
 import android.location.Criteria;
@@ -25,12 +26,8 @@ import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.akexorcist.googledirection.DirectionCallback;
-import com.akexorcist.googledirection.GoogleDirection;
-import com.akexorcist.googledirection.constant.TransportMode;
-import com.akexorcist.googledirection.model.Direction;
-import com.akexorcist.googledirection.model.Route;
-import com.akexorcist.googledirection.util.DirectionConverter;
+import com.google.android.gms.location.LocationListener;
+import com.google.android.gms.location.places.ui.PlacePicker;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
@@ -61,8 +58,9 @@ import java.util.List;
 import java.util.TimeZone;
 
 import rushhour.com.rushhour.util.DirectionsJSONParser;
+import rushhour.com.rushhour.util.GPSTracker;
 
-public class ApplicationActivity extends AppCompatActivity implements OnMapReadyCallback, View.OnClickListener, DirectionCallback {
+public class ApplicationActivity extends AppCompatActivity implements OnMapReadyCallback, View.OnClickListener {
 
     /* Google Direction API */
     private GoogleMap googleMap;
@@ -109,8 +107,13 @@ public class ApplicationActivity extends AppCompatActivity implements OnMapReady
         duration3 = (TextView) findViewById(R.id.duration3);
         duration4 = (TextView) findViewById(R.id.duration4);
 
+        GPSTracker gpsTracker = new GPSTracker(this);
+        currentLat = gpsTracker.getLatitude();
+        currentLon = gpsTracker.getLongitude();
+        /*
         currentLat = 43.6532;
         currentLon = -79.3832;
+        */
 
         camera = new LatLng(currentLat, currentLon);
 
@@ -142,6 +145,14 @@ public class ApplicationActivity extends AppCompatActivity implements OnMapReady
                 destination = new LatLng(endLat, endLon);
 
                 googleMap.animateCamera(CameraUpdateFactory.newLatLngZoom(origin, 17));
+
+                googleMap.addMarker(new MarkerOptions()
+                        .position(destination)
+                        .title("End")).showInfoWindow();
+
+                googleMap.addMarker(new MarkerOptions()
+                        .position(origin)
+                        .title("Start")).showInfoWindow();
 
                 requestDirection();
             }
@@ -178,34 +189,6 @@ public class ApplicationActivity extends AppCompatActivity implements OnMapReady
         String url = getDirectionsUrl(origin, destination, time);
         // Start downloading json data from Google Directions API
         downloadTask.execute(url);
-    }
-
-    @Override
-    public void onDirectionSuccess(Direction direction, String rawBody) {
-        Snackbar.make(button, "Success with status : " + direction.getStatus(), Snackbar.LENGTH_SHORT).show();
-        if (direction.isOK()) {
-            googleMap.addMarker(new MarkerOptions().position(origin));
-            googleMap.addMarker(new MarkerOptions().position(destination));
-
-            for (int i = 0; i < direction.getRouteList().size(); i++) {
-                Route route = direction.getRouteList().get(i);
-                String color = colors[i % colors.length];
-                ArrayList<LatLng> directionPositionList = route.getLegList().get(0).getDirectionPoint();
-                googleMap.addPolyline(DirectionConverter.createPolyline(this, directionPositionList, 5, Color.parseColor(color)));
-                /*
-                googleMap.addMarker(new MarkerOptions()
-                        .position(directionPositionList.get(directionPositionList.size()/2))
-                        .title("fuck")).showInfoWindow();
-                */
-            }
-
-            button.setVisibility(View.GONE);
-        }
-    }
-
-    @Override
-    public void onDirectionFailure(Throwable t) {
-        Snackbar.make(button, t.getMessage(), Snackbar.LENGTH_SHORT).show();
     }
 
     public LatLng getLocationFromAddress(String strAddress) {
@@ -415,23 +398,23 @@ public class ApplicationActivity extends AppCompatActivity implements OnMapReady
                 lineOptions.color(Color.BLUE);
             }
 
-            Toast.makeText(getBaseContext(), "Time:"+time + ", Duration:"+duration, Toast.LENGTH_LONG).show();
-            System.out.println("TIME: " + time);
+            //Toast.makeText(getBaseContext(), "Time:"+time + ", Duration:"+duration, Toast.LENGTH_LONG).show();
+            //System.out.println("TIME: " + time);
 
             // Drawing polyline in the Google Map for the i-th route
             googleMap.addPolyline(lineOptions);
 
             if (time == 0) {
-                duration1.setText("Leave now: " + duration);
+                duration1.setText("Now: " + duration);
             }
             else if (time == 1800) {
-                duration2.setText("Leave in 30 mins: " + duration);
+                duration2.setText("In 30 mins: " + duration);
             }
             else if (time == 3600) {
-                duration3.setText("Leave in 1 hour: " + duration);
+                duration3.setText("In 1 hour: " + duration);
             }
             else if (time == 5400) {
-                duration4.setText("Leave in 90 mins: " + duration);
+                duration4.setText("In 90 mins: " + duration);
             }
 
             if (time < 5400) {
