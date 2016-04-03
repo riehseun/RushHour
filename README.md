@@ -2,11 +2,6 @@
 
 Dcongestant
 
-uses following API's
-
-1. Google Direction API
-2. https://github.com/akexorcist/Android-GoogleDirectionLibrary
-
 Uses
 
 1. Create android key and server key from Google API
