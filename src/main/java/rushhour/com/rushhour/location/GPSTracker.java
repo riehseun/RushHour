@@ -1,19 +1,14 @@
-package rushhour.com.rushhour.util;
+package rushhour.com.rushhour.location;
 
 /**
  * Created by user on 2016-04-03.
  */
-import java.io.IOException;
-import java.util.List;
-import java.util.Locale;
 
 import android.app.AlertDialog;
 import android.app.Service;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
-import android.location.Address;
-import android.location.Geocoder;
 import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;

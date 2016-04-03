@@ -1,47 +1,31 @@
 package rushhour.com.rushhour;
 
-import android.app.Activity;
-import android.app.Fragment;
-import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.Intent;
 import android.graphics.Color;
 import android.location.Address;
-import android.location.Criteria;
 import android.location.Geocoder;
-import android.location.Location;
-import android.location.LocationManager;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.design.widget.Snackbar;
-import android.support.v4.app.FragmentActivity;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.View;
-import android.view.WindowManager;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.Button;
 import android.widget.EditText;
-import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.google.android.gms.location.LocationListener;
-import com.google.android.gms.location.places.ui.PlacePicker;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
-import com.google.android.gms.maps.model.BitmapDescriptorFactory;
-import com.google.android.gms.maps.model.CameraPosition;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.gms.maps.model.PolylineOptions;
 
-import org.json.JSONArray;
-import org.json.JSONException;
 import org.json.JSONObject;
-import org.w3c.dom.Text;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -49,22 +33,20 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
-import java.text.DateFormat;
 import java.util.ArrayList;
-import java.util.Calendar;
-import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
-import java.util.TimeZone;
 
+import rushhour.com.rushhour.place.GooglePlacesReadTask;
 import rushhour.com.rushhour.util.DirectionsJSONParser;
-import rushhour.com.rushhour.util.GPSTracker;
+import rushhour.com.rushhour.location.GPSTracker;
 
 public class ApplicationActivity extends AppCompatActivity implements OnMapReadyCallback, View.OnClickListener {
 
     /* Google Direction API */
     private GoogleMap googleMap;
     private String serverKey = "AIzaSyALQ8AUHj3Y5PeSwUVjE-aN3KnaLqlnK-w";
+    //private String serverKey = "AIzaSyDW6B_geqVgT2YaEYyn-FxxG8JqFIkIXmE";
     private LatLng camera;
     private LatLng origin;
     private LatLng destination;
@@ -96,6 +78,8 @@ public class ApplicationActivity extends AppCompatActivity implements OnMapReady
     private TextView duration4;
 
     private static int time = 0;
+
+    private int PROXIMITY_RADIUS = 500;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -144,7 +128,7 @@ public class ApplicationActivity extends AppCompatActivity implements OnMapReady
                 origin = new LatLng(startLat, startLon);
                 destination = new LatLng(endLat, endLon);
 
-                googleMap.animateCamera(CameraUpdateFactory.newLatLngZoom(origin, 17));
+                googleMap.animateCamera(CameraUpdateFactory.newLatLngZoom(origin, 15));
 
                 googleMap.addMarker(new MarkerOptions()
                         .position(destination)
@@ -422,6 +406,25 @@ public class ApplicationActivity extends AppCompatActivity implements OnMapReady
                 time += 1800; // increament by 30 minutes
                 String url = getDirectionsUrl(origin, destination, time);
                 downloadTask.execute(url);
+            }
+            else {
+                /*
+                currentLat = 43.6532;
+                currentLon = -79.3832;
+                */
+                StringBuilder googlePlacesUrl = new StringBuilder("https://maps.googleapis.com/maps/api/place/nearbysearch/json?");
+                String type = "cafe";
+                googlePlacesUrl.append("location=" + currentLat + "," + currentLon);
+                googlePlacesUrl.append("&radius=" + PROXIMITY_RADIUS);
+                googlePlacesUrl.append("&types=" + type);
+                googlePlacesUrl.append("&sensor=true");
+                googlePlacesUrl.append("&key=" + serverKey);
+
+                GooglePlacesReadTask googlePlacesReadTask = new GooglePlacesReadTask();
+                Object[] toPass = new Object[2];
+                toPass[0] = googleMap;
+                toPass[1] = googlePlacesUrl.toString();
+                googlePlacesReadTask.execute(toPass);
             }
         }
     }

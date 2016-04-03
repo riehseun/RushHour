@@ -50,8 +50,9 @@
                 android:layout_width="0dp"
                 android:layout_height="25dp"
                 android:layout_weight="1"
+                android:padding="3dp"
                 android:background="@drawable/background"
-                android:hint="Travel Time" >
+                android:hint="Now" >
             </TextView>
 
             <TextView
@@ -59,8 +60,9 @@
                 android:layout_width="0dp"
                 android:layout_height="25dp"
                 android:layout_weight="1"
+                android:padding="3dp"
                 android:background="@drawable/background"
-                android:hint="Travel Time" >
+                android:hint="In 30 mins" >
             </TextView>
         </LinearLayout>
 
@@ -73,8 +75,9 @@
                 android:layout_width="0dp"
                 android:layout_height="25dp"
                 android:layout_weight="1"
+                android:padding="3dp"
                 android:background="@drawable/background"
-                android:hint="Travel Time" >
+                android:hint="In 60 mins" >
             </TextView>
 
             <TextView
@@ -82,8 +85,9 @@
                 android:layout_width="0dp"
                 android:layout_height="25dp"
                 android:layout_weight="1"
+                android:padding="3dp"
                 android:background="@drawable/background"
-                android:hint="Travel Time" >
+                android:hint="In 90 mins" >
             </TextView>
         </LinearLayout>
     </LinearLayout>

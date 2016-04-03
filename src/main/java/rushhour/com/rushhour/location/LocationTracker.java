@@ -1,4 +1,4 @@
-package rushhour.com.rushhour.util;
+package rushhour.com.rushhour.location;
 
 /**
  * Created by user on 2016-04-03.
