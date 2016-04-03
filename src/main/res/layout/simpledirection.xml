@@ -33,6 +33,7 @@
         android:layout_below="@+id/to"
         tools:context=".MapsActivity" />
 
+    <!--
     <Button
         android:id="@+id/btn_request_direction"
         android:layout_width="wrap_content"
@@ -40,5 +41,5 @@
         android:layout_alignParentBottom="true"
         android:layout_centerHorizontal="true"
         android:text="@string/request_direction" />
-
+    -->
 </RelativeLayout>
