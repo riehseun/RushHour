@@ -2,7 +2,13 @@
 
 Dcongestant
 
-Uses
+Description
+1. Find ur current location
+2. Find travel time between point A to B in now, 30min, 60min, 90min
+3. Suggest businesses around you to spend little time to avoid RUSH HOUR
+
+
+How to use the code
 
 1. Create android key and server key from Google API
 2. Set IP address to be allowed from the server key
