@@ -95,8 +95,8 @@ public class ApplicationActivity extends AppCompatActivity implements OnMapReady
 
         from = (EditText)findViewById(R.id.from);
         to = (EditText)findViewById(R.id.to);
-        from.setText("1 yonge street toronto ontario canada");
-        to.setText("2373 yonge street toronto ontario canada");
+        //from.setText("1 yonge street toronto ontario canada");
+        //to.setText("2373 yonge street toronto ontario canada");
 
         GPSTracker gpsTracker = new GPSTracker(this);
         currentLat = gpsTracker.getLatitude();
@@ -424,6 +424,7 @@ public class ApplicationActivity extends AppCompatActivity implements OnMapReady
                 toPass[0] = googleMap;
                 toPass[1] = googlePlacesUrl.toString();
                 googlePlacesReadTask.execute(toPass);
+
             }
         }
     }
